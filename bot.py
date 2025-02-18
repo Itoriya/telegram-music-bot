@@ -72,5 +72,11 @@ while True:
     except Exception as e:
         print(f"Сбой в работе бота: {e}")
         time.sleep(5)  # Ждём 5 секунд перед перезапуском
+           # Удаляем файл после отправки
+        os.remove(filename)
+    except Exception as e:
+        bot.send_message(message.chat.id, "❌ Ошибка при скачивании аудио")
+        print(f"Ошибка при скачивании: {e}")
+        
 
 bot.polling()
