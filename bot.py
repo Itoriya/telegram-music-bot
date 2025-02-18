@@ -34,9 +34,13 @@ def download_audio(url):
         return None
 
 # 🚀 Обработчик команд /start
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "Привет! Я работаю! 🚀\n\n🎶 Используй /find для поиска музыки\n📥 Отправь ссылку YouTube — я загружу музыку!")
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(KeyboardButton("🔍 Найти музыку"), KeyboardButton("🎵 Скачать по ссылке"))
+    bot.send_message(message.chat.id, "Привет! Выбери действие:", reply_markup=keyboard)
 
 # 🔍 Поиск музыки в YouTube Music
 @bot.message_handler(commands=['find'])
