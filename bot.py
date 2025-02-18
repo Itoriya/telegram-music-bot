@@ -3,7 +3,7 @@ import telebot
 import yt_dlp
 import os
 
-#7867908233:AAE9gISHhGZu1LBlyMxiOmcs6rvnmk_14xc
+#7867908233:AAE9gISHhGZu1LBlyMxiOmcs6rvnmk_14xc"
 TOKEN = "7867908233:AAE9gISHhGZu1LBlyMxiOmcs6rvnmk_14xc" 
 bot = telebot.TeleBot(TOKEN)
 
@@ -43,5 +43,10 @@ def send_audio(message):
             bot.reply_to(message, "❌ Ошибка при загрузке. Попробуй другую ссылку.")
     except Exception as e:
         bot.reply_to(message, f"❌ Ошибка: {str(e)}")
+        import telebot
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "Привет! Я работаю! 🚀")
 
 bot.polling()
