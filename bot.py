@@ -3,7 +3,7 @@ import yt_dlp
 import os
 import time
 from ytmusicapi import YTMusic
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 TOKEN = "7867908233:AAE9gISHhGZu1LBlyMxiOmcs6rvnmk_14xc"
 bot = telebot.TeleBot(TOKEN)
@@ -34,20 +34,28 @@ def download_audio(url):
         print(f"❌ Ошибка загрузки аудио: {e}")
         return None
 
-# 🚀 Клавиатура с кнопками
-def main_keyboard():
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(KeyboardButton("🔍 Найти музыку"), KeyboardButton("🎵 Скачать по ссылке"))
-    return keyboard
-
+# 🚀 Кнопки (inline-клавиатура)
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.send_message(message.chat.id, "Привет! Выбери действие:", reply_markup=main_keyboard())
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        InlineKeyboardButton("🔍 Найти музыку", callback_data="find_music"),
+        InlineKeyboardButton("🎵 Скачать по ссылке", callback_data="download_music")
+    )
+    bot.send_message(message.chat.id, "Привет! Выберите действие:", reply_markup=keyboard)
+
+# Обработчик кнопок
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback(call):
+    if call.data == "find_music":
+        bot.send_message(call.message.chat.id, "Введите название песни после /find")
+    elif call.data == "download_music":
+        bot.send_message(call.message.chat.id, "Отправьте ссылку на YouTube")
 
 # 🔍 Поиск музыки в YouTube Music с автоматическим скачиванием
 @bot.message_handler(commands=['find'])
 def find_music(message):
-    query = message.text.replace('/find', '').strip()  
+    query = message.text.replace('/find', '').strip()
 
     if not query:
         bot.send_message(message.chat.id, "❌ Укажите название песни после /find")
@@ -56,7 +64,7 @@ def find_music(message):
     bot.send_message(message.chat.id, f"🔍 Ищу: {query}...")
 
     try:
-        search_results = ytmusic.search(query, filter="songs", limit=10)  # Увеличили до 10 треков
+        search_results = ytmusic.search(query, filter="songs", limit=10)  # Увеличено до 10 результатов
 
         if not search_results:
             bot.send_message(message.chat.id, "⚠️ Ничего не найдено!")
@@ -103,20 +111,11 @@ def send_audio(message):
     except Exception as e:
         bot.reply_to(message, f"❌ Ошибка: {str(e)}")
 
-# 🛠 Обработчик сообщений с кнопками
-@bot.message_handler(func=lambda message: message.text == "🔍 Найти музыку")
-def handle_find_button(message):
-    bot.send_message(message.chat.id, "Введите название песни после /find")
-
-@bot.message_handler(func=lambda message: message.text == "🎵 Скачать по ссылке")
-def handle_download_button(message):
-    bot.send_message(message.chat.id, "Отправьте ссылку на YouTube")
-
 # 🛠 Универсальный обработчик всех сообщений
 @bot.message_handler(func=lambda message: True)
 def handle_all_messages(message):
     try:
-        bot.reply_to(message, "Я пока не знаю эту команду 😕\nПопробуй:\n✅ /find [название песни] — найти музыку\n✅ Отправь ссылку на YouTube — я загружу трек!", reply_markup=main_keyboard())
+        bot.reply_to(message, "Я пока не знаю эту команду 😕\nПопробуй:\n✅ /find [название песни] — найти музыку\n✅ Отправь ссылку на YouTube — я загружу трек!")
     except Exception as e:
         print(f"Ошибка при обработке сообщения: {e}")
 
