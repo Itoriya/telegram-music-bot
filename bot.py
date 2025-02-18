@@ -30,13 +30,13 @@ def download_audio(url):
             filename = f"music/{info['title']}.mp3"
             return filename
     except Exception as e:
-        print(f"Ошибка загрузки аудио: {e}")
+        print(f"❌ Ошибка загрузки аудио: {e}")
         return None
 
 # 🚀 Обработчик команд /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "Привет! Я работаю! 🚀")
+    bot.reply_to(message, "Привет! Я работаю! 🚀\n\n🎶 Используй /find для поиска музыки\n📥 Отправь ссылку YouTube — я загружу музыку!")
 
 # 🔍 Поиск музыки в YouTube Music
 @bot.message_handler(commands=['find'])
@@ -61,8 +61,12 @@ def find_music(message):
         for i, song in enumerate(search_results, start=1):
             title = song['title']
             artist = song['artists'][0]['name']
-            link = f"https://music.youtube.com/watch?v={song['videoId']}"
-            response += f"{i}. [{title} - {artist}]({link})\n"
+            video_id = song.get('videoId')
+            if video_id:
+                link = f"https://music.youtube.com/watch?v={video_id}"
+                response += f"{i}. [{title} - {artist}]({link})\n"
+            else:
+                response += f"{i}. {title} - {artist}\n"
 
         bot.send_message(message.chat.id, response, parse_mode="Markdown")
 
@@ -71,7 +75,7 @@ def find_music(message):
         print(f"Ошибка при поиске музыки: {e}")
 
 # 📥 Скачивание музыки из YouTube
-@bot.message_handler(func=lambda message: "youtube.com" in message.text or "youtu.be" in message.text)
+@bot.message_handler(func=lambda message: "youtube.com" in message.text or "youtu.be" in message.text or "music.youtube.com" in message.text)
 def send_audio(message):
     bot.reply_to(message, "🎵 Загружаю музыку, подожди 1-2 минуты...")
     try:
@@ -85,11 +89,11 @@ def send_audio(message):
     except Exception as e:
         bot.reply_to(message, f"❌ Ошибка: {str(e)}")
 
-# Универсальный обработчик всех сообщений (чтобы бот не падал)
+# 🛠 Универсальный обработчик всех сообщений (чтобы бот не падал)
 @bot.message_handler(func=lambda message: True)
 def handle_all_messages(message):
     try:
-        bot.reply_to(message, "Я пока не знаю эту команду 😕")
+        bot.reply_to(message, "Я пока не знаю эту команду 😕\nПопробуй:\n✅ /find [название песни] — найти музыку\n✅ Отправь ссылку на YouTube — я загружу трек!")
     except Exception as e:
         print(f"Ошибка при обработке сообщения: {e}")
 
@@ -99,5 +103,5 @@ while True:
         print("Бот запущен и ждёт команды!")
         bot.polling(none_stop=True, timeout=60)
     except Exception as e:
-        print(f"Сбой в работе бота: {e}")
+        print(f"⚠️ Сбой в работе бота: {e}")
         time.sleep(5)  # Ждём 5 секунд перед перезапуском
