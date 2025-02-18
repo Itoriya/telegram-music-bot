@@ -34,10 +34,23 @@ def download_audio(url):
         print(f"❌ Ошибка загрузки аудио: {e}")
         return None
 
-# 🚀 Обработчик команды /start
+# 🚀 Кнопки при старте
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.send_message(message.chat.id, "Привет! Введи название песни или исполнителя:")
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        InlineKeyboardButton("🔍 Найти музыку", callback_data="find_music"),
+        InlineKeyboardButton("🎵 Скачать по ссылке", callback_data="download_music")
+    )
+    bot.send_message(message.chat.id, "Привет! Выберите действие:", reply_markup=keyboard)
+
+# Обработчик кнопок
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback(call):
+    if call.data == "find_music":
+        bot.send_message(call.message.chat.id, "Введите название песни после /find")
+    elif call.data == "download_music":
+        bot.send_message(call.message.chat.id, "Отправьте ссылку на YouTube")
 
 # 🔍 Поиск музыки и создание кнопок выбора трека
 @bot.message_handler(commands=['find'])
