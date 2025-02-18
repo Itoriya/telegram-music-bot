@@ -34,25 +34,12 @@ def download_audio(url):
         print(f"❌ Ошибка загрузки аудио: {e}")
         return None
 
-# 🚀 Кнопки (inline-клавиатура)
+# 🚀 Обработчик команды /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(
-        InlineKeyboardButton("🔍 Найти музыку", callback_data="find_music"),
-        InlineKeyboardButton("🎵 Скачать по ссылке", callback_data="download_music")
-    )
-    bot.send_message(message.chat.id, "Привет! Выберите действие:", reply_markup=keyboard)
+    bot.send_message(message.chat.id, "Привет! Введи название песни или исполнителя:")
 
-# Обработчик кнопок
-@bot.callback_query_handler(func=lambda call: True)
-def handle_callback(call):
-    if call.data == "find_music":
-        bot.send_message(call.message.chat.id, "Введите название песни после /find")
-    elif call.data == "download_music":
-        bot.send_message(call.message.chat.id, "Отправьте ссылку на YouTube")
-
-# 🔍 Поиск музыки в YouTube Music с автоматическим скачиванием
+# 🔍 Поиск музыки и создание кнопок выбора трека
 @bot.message_handler(commands=['find'])
 def find_music(message):
     query = message.text.replace('/find', '').strip()
@@ -70,54 +57,37 @@ def find_music(message):
             bot.send_message(message.chat.id, "⚠️ Ничего не найдено!")
             return
 
-        # Берём первый найденный трек
-        first_song = search_results[0]
-        title = first_song['title']
-        artist = first_song['artists'][0]['name']
-        video_id = first_song.get('videoId')
+        keyboard = InlineKeyboardMarkup()
+        for song in search_results:
+            title = song['title']
+            artist = song['artists'][0]['name']
+            video_id = song.get('videoId')
 
-        if not video_id:
-            bot.send_message(message.chat.id, "❌ Ошибка: не удалось найти видео ID.")
-            return
+            if video_id:
+                button_text = f"{title} - {artist}"
+                keyboard.add(InlineKeyboardButton(button_text, callback_data=f"download_{video_id}"))
 
-        youtube_url = f"https://music.youtube.com/watch?v={video_id}"
-        bot.send_message(message.chat.id, f"🎶 Нашёл: {title} - {artist}\n⏳ Загружаю...")
-
-        # Скачиваем и отправляем музыку
-        filepath = download_audio(youtube_url)
-
-        if filepath and os.path.exists(filepath):
-            with open(filepath, 'rb') as audio:
-                bot.send_audio(message.chat.id, audio)
-            os.remove(filepath)  # Удаляем файл после отправки
-        else:
-            bot.send_message(message.chat.id, "❌ Ошибка при загрузке.")
+        bot.send_message(message.chat.id, "🎶 Выбери песню для загрузки:", reply_markup=keyboard)
 
     except Exception as e:
         bot.send_message(message.chat.id, f"❌ Ошибка при поиске: {e}")
 
-# 📥 Скачивание музыки из YouTube по ссылке
-@bot.message_handler(func=lambda message: "youtube.com" in message.text or "youtu.be" in message.text or "music.youtube.com" in message.text)
-def send_audio(message):
-    bot.reply_to(message, "🎵 Загружаю музыку, подожди 1-2 минуты...")
-    try:
-        filepath = download_audio(message.text)
-        if filepath and os.path.exists(filepath):  # Проверяем, скачался ли файл
-            with open(filepath, 'rb') as audio:
-                bot.send_audio(message.chat.id, audio)
-            os.remove(filepath)  # Удаляем файл после отправки
-        else:
-            bot.reply_to(message, "❌ Ошибка при загрузке. Попробуй другую ссылку.")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Ошибка: {str(e)}")
+# 📥 Обработчик нажатий на кнопки выбора трека
+@bot.callback_query_handler(func=lambda call: call.data.startswith("download_"))
+def handle_download(call):
+    video_id = call.data.replace("download_", "")
+    youtube_url = f"https://music.youtube.com/watch?v={video_id}"
 
-# 🛠 Универсальный обработчик всех сообщений
-@bot.message_handler(func=lambda message: True)
-def handle_all_messages(message):
-    try:
-        bot.reply_to(message, "Я пока не знаю эту команду 😕\nПопробуй:\n✅ /find [название песни] — найти музыку\n✅ Отправь ссылку на YouTube — я загружу трек!")
-    except Exception as e:
-        print(f"Ошибка при обработке сообщения: {e}")
+    bot.send_message(call.message.chat.id, "⏳ Загружаю музыку...")
+
+    filepath = download_audio(youtube_url)
+
+    if filepath and os.path.exists(filepath):
+        with open(filepath, 'rb') as audio:
+            bot.send_audio(call.message.chat.id, audio)
+        os.remove(filepath)  # Удаляем файл после отправки
+    else:
+        bot.send_message(call.message.chat.id, "❌ Ошибка при загрузке.")
 
 # 🔄 Автоперезапуск бота при сбое
 while True:
