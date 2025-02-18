@@ -112,5 +112,6 @@ def find_music(message):
     except Exception as e:
         bot.send_message(message.chat.id, "❌ Ошибка при поиске музыки")
         print(f"Ошибка при поиске музыки: {e}")
-
+        print("Бот запущен и ждёт команды!")
+bot.polling(none_stop=True)
 bot.polling()
