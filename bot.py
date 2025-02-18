@@ -91,6 +91,8 @@ def handle_download(call):
     video_id = call.data.replace("download_", "")
     youtube_url = f"https://music.youtube.com/watch?v={video_id}"
 
+    print(f"Загружаем: {youtube_url}")  # Отладка
+
     bot.send_message(call.message.chat.id, "⏳ Загружаю музыку...")
 
     filepath = download_audio(youtube_url)
