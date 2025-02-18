@@ -48,5 +48,29 @@ def send_audio(message):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.reply_to(message, "Привет! Я работаю! 🚀")
+    import time
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    try:
+        bot.reply_to(message, "Привет! Я работаю! 🚀")
+    except Exception as e:
+        print(f"Ошибка в /start: {e}")
+
+# Универсальный обработчик всех сообщений (чтобы не падал)
+@bot.message_handler(func=lambda message: True)
+def handle_all_messages(message):
+    try:
+        bot.reply_to(message, "Я пока не знаю эту команду 😕")
+    except Exception as e:
+        print(f"Ошибка при обработке сообщения: {e}")
+
+# Автоперезапуск бота при сбое
+while True:
+    try:
+        bot.polling(none_stop=True, timeout=60)
+    except Exception as e:
+        print(f"Сбой в работе бота: {e}")
+        time.sleep(5)  # Ждём 5 секунд перед перезапуском
 
 bot.polling()
