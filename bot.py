@@ -77,6 +77,40 @@ while True:
     except Exception as e:
         bot.send_message(message.chat.id, "❌ Ошибка при скачивании аудио")
         print(f"Ошибка при скачивании: {e}")
-        
+        from ytmusicapi import YTMusic
+
+ytmusic = YTMusic()  # Подключаем API YouTube Music
+
+@bot.message_handler(commands=['find'])
+def find_music(message):
+    query = message.text.replace('/find', '').strip()  # Получаем запрос без команды
+
+    if not query:
+        bot.send_message(message.chat.id, "❌ Пожалуйста, укажите название песни после /find")
+        return
+
+    bot.send_message(message.chat.id, f"🔍 Ищу: {query}...")
+
+    try:
+        # Ищем треки
+        search_results = ytmusic.search(query, filter="songs", limit=5)
+
+        if not search_results:
+            bot.send_message(message.chat.id, "⚠️ Ничего не найдено!")
+            return
+
+        # Формируем список результатов
+        response = "🎶 **Вот что я нашёл:**\n\n"
+        for i, song in enumerate(search_results, start=1):
+            title = song['title']
+            artist = song['artists'][0]['name']
+            link = f"https://music.youtube.com/watch?v={song['videoId']}"
+            response += f"{i}. [{title} - {artist}]({link})\n"
+
+        bot.send_message(message.chat.id, response, parse_mode="Markdown")
+
+    except Exception as e:
+        bot.send_message(message.chat.id, "❌ Ошибка при поиске музыки")
+        print(f"Ошибка при поиске музыки: {e}")
 
 bot.polling()
