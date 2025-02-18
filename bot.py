@@ -47,6 +47,7 @@ def send_welcome(message):
 # Обработчик кнопок
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
+    print(f"Callback received: {call.data}")  # Отладочное сообщение
     if call.data == "find_music":
         bot.send_message(call.message.chat.id, "Введите название песни после /find")
     elif call.data == "download_music":
@@ -88,10 +89,9 @@ def find_music(message):
 # 📥 Обработчик нажатий на кнопки выбора трека
 @bot.callback_query_handler(func=lambda call: call.data.startswith("download_"))
 def handle_download(call):
+    print(f"Downloading track with videoId: {call.data}")  # Отладочное сообщение
     video_id = call.data.replace("download_", "")
     youtube_url = f"https://music.youtube.com/watch?v={video_id}"
-
-    print(f"Загружаем: {youtube_url}")  # Отладка
 
     bot.send_message(call.message.chat.id, "⏳ Загружаю музыку...")
 
