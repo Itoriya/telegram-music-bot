@@ -5,7 +5,7 @@ import time
 from ytmusicapi import YTMusic
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-TOKEN = "7867908233:AAE9gISHhGZu1LBlyMxiOmcs6rvnmk_14xc"
+TOKEN = "TOKEN = "7867908233:AAHPYLVLXZnCWZAsRF8SAj3TdOhcTtX-UNY"
 bot = telebot.TeleBot(TOKEN)
 
 # Подключаем API YouTube Music
