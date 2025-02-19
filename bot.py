@@ -6,7 +6,7 @@ from ytmusicapi import YTMusic
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 TOKEN = "7867908233:AAE9gISHhGZu1LBlyMxiOmcs6rvnmk_14xc"
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(7867908233:AAE9gISHhGZu1LBlyMxiOmcs6rvnmk_14xc)
 
 # Подключаем API YouTube Music
 ytmusic = YTMusic()
@@ -16,7 +16,7 @@ def download_audio(url):
     if not os.path.exists("music"):
         os.makedirs("music")  # Создаём папку, если её нет
 
-    print(f"Подготовка к скачиванию: {url}")  # Отладка
+    print(f"Подготовка к скачиванию: {url}")  # Отладка, чтобы увидеть правильность URL
 
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -57,57 +57,22 @@ def handle_callback(call):
     elif call.data == "download_music":
         bot.send_message(call.message.chat.id, "Отправьте ссылку на YouTube")
 
-# 🔍 Поиск музыки и создание кнопок выбора трека
-@bot.message_handler(commands=['find'])
-def find_music(message):
-    query = message.text.replace('/find', '').strip()
-
-    if not query:
-        bot.send_message(message.chat.id, "❌ Укажите название песни после /find")
-        return
-
-    bot.send_message(message.chat.id, f"🔍 Ищу: {query}...")
-
+# 📥 Скачивание музыки по ссылке
+@bot.message_handler(func=lambda message: "youtube.com" in message.text or "youtu.be" in message.text or "music.youtube.com" in message.text)
+def send_audio(message):
+    print(f"Ссылка получена: {message.text}")  # Отладка, чтобы увидеть, какую ссылку отправляет пользователь
+    bot.reply_to(message, "🎵 Загружаю музыку, подожди 1-2 минуты...")
     try:
-        search_results = ytmusic.search(query, filter="songs", limit=10)  # Увеличено до 10 результатов
-
-        if not search_results:
-            bot.send_message(message.chat.id, "⚠️ Ничего не найдено!")
-            return
-
-        keyboard = InlineKeyboardMarkup()
-        for song in search_results:
-            title = song['title']
-            artist = song['artists'][0]['name']
-            video_id = song.get('videoId')
-
-            if video_id:
-                button_text = f"{title} - {artist}"
-                keyboard.add(InlineKeyboardButton(button_text, callback_data=f"download_{video_id}"))
-
-        bot.send_message(message.chat.id, "🎶 Выбери песню для загрузки:", reply_markup=keyboard)
-
+        filepath = download_audio(message.text)
+        if filepath and os.path.exists(filepath):  # Проверяем, скачался ли файл
+            with open(filepath, 'rb') as audio:
+                bot.send_audio(message.chat.id, audio)
+            os.remove(filepath)  # Удаляем файл после отправки
+        else:
+            bot.reply_to(message, "❌ Ошибка при загрузке. Попробуй другую ссылку.")
     except Exception as e:
-        bot.send_message(message.chat.id, f"❌ Ошибка при поиске: {e}")
-
-# 📥 Обработчик нажатий на кнопки выбора трека
-@bot.callback_query_handler(func=lambda call: call.data.startswith("download_"))
-def handle_download(call):
-    video_id = call.data.replace("download_", "")
-    youtube_url = f"https://music.youtube.com/watch?v={video_id}"
-
-    print(f"Загружаем: {youtube_url}")  # Отладка
-
-    bot.send_message(call.message.chat.id, "⏳ Загружаю музыку...")
-
-    filepath = download_audio(youtube_url)
-
-    if filepath and os.path.exists(filepath):
-        with open(filepath, 'rb') as audio:
-            bot.send_audio(call.message.chat.id, audio)
-        os.remove(filepath)  # Удаляем файл после отправки
-    else:
-        bot.send_message(call.message.chat.id, "❌ Ошибка при загрузке.")
+        print(f"Ошибка при скачивании: {e}")  # Отладка
+        bot.reply_to(message, f"❌ Ошибка: {str(e)}")
 
 # 🔄 Автоперезапуск бота при сбое
 while True:
