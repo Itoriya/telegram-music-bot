@@ -16,7 +16,7 @@ def download_audio(url):
     if not os.path.exists("music"):
         os.makedirs("music")  # Создаём папку, если её нет
 
-    print(f"Подготовка к скачиванию: {url}")  # Отладка, чтобы увидеть правильность URL
+    print(f"Подготовка к скачиванию: {url}")  # Отладка
 
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -29,6 +29,7 @@ def download_audio(url):
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            print("Запуск скачивания...")  # Отладка
             info = ydl.extract_info(url, download=True)
             filename = f"music/{info['title']}.mp3"
             print(f"Файл скачан: {filename}")  # Отладка
