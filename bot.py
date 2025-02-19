@@ -5,7 +5,6 @@ import time
 from ytmusicapi import YTMusic
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-# Токен должен быть строкой!
 TOKEN = "7867908233:AAE9gISHhGZu1LBlyMxiOmcs6rvnmk_14xc"
 bot = telebot.TeleBot(TOKEN)
 
@@ -42,6 +41,7 @@ def download_audio(url):
 # 🚀 Кнопки при старте
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    print("Команда /start получена.")  # Отладка
     keyboard = InlineKeyboardMarkup()
     keyboard.add(
         InlineKeyboardButton("🔍 Найти музыку", callback_data="find_music"),
