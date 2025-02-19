@@ -6,7 +6,7 @@ from ytmusicapi import YTMusic
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Подключаем правильный токен
-TOKEN = "7867908233:AAHPYLVLXZnCWZAsRF8SAj3TdOhcTtX-UNY"  # Обновлённый токен
+TOKEN = "TOKEN = "7867908233:AAFwF9BykPRkJNwurqCoDyGNRVlqV3xBqe4"  # Обновлённый токен
 
 # Инициализация бота
 bot = telebot.TeleBot(TOKEN)
