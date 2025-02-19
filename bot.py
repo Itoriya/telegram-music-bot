@@ -5,7 +5,10 @@ import time
 from ytmusicapi import YTMusic
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-TOKEN = "TOKEN = "7867908233:AAHPYLVLXZnCWZAsRF8SAj3TdOhcTtX-UNY"
+# Подключаем правильный токен
+TOKEN = "7867908233:AAHPYLVLXZnCWZAsRF8SAj3TdOhcTtX-UNY"  # Обновлённый токен
+
+# Инициализация бота
 bot = telebot.TeleBot(TOKEN)
 
 # Подключаем API YouTube Music
@@ -76,4 +79,10 @@ def send_audio(message):
         bot.reply_to(message, f"❌ Ошибка: {str(e)}")
 
 # 🔄 Автоперезапуск бота при сбое
-bot.polling(none_stop=True, timeout=60)  # Запуск бота с polling, без while True
+while True:
+    try:
+        print("Бот запущен и ждёт команды!")
+        bot.polling(none_stop=True, timeout=60)
+    except Exception as e:
+        print(f"⚠️ Сбой в работе бота: {e}")
+        time.sleep(5)  # Ждём 5 секунд перед перезапуском
